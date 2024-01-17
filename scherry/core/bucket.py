@@ -29,6 +29,10 @@ class Bucket:
     def bucketPath(self):
         return os.path.join(buckets_dir, self.__name)    
     
+    @property
+    def name(self):
+        return self.__name
+    
     @cached_property
     def indexJsonPath(self):
         for f in os.listdir(self.bucketPath):

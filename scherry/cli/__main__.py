@@ -6,9 +6,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath
 from scherry.cli.gen import gen
 from scherry.cli.exe import run_cmd, list_, bucket
 
-@click.group()
-def cli():
-    pass
+@click.group(invoke_without_command=True)
+@click.option("--debug", "-d", is_flag=True)
+def cli(debug):
+    if debug:
+        import logging
+        logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 
 cli.add_command(gen)
 cli.add_command(run_cmd)

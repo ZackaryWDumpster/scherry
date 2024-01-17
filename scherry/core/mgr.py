@@ -94,6 +94,7 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
     def get_script(self, name : str):
         for bucket in self.__bucketMaps.values():
             if bucket.hasKey(name):
+                logging.info(f"Get script {name} from bucket {bucket.name}")
                 return bucket.get(name)
     
     def __handle_entry(self, config : dict):
