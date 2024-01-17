@@ -20,6 +20,7 @@ setup(
         "console_scripts": [
             "scherry=scherry.cli.__main__:cli",
             "schry=scherry.cli.__main__:cli",
+            "scherry-bkup=scherry.cli.bkup:cli",
         ]
     }
 )
