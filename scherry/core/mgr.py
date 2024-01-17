@@ -1,3 +1,4 @@
+import logging
 import shutil
 import typing
 from scherry.core.bucket import Bucket, buckets_dir
@@ -6,8 +7,16 @@ from scherry.utils.git import download_github_raw_content
 import os
 import zipfile
 import io
+import toml
 
-class ScherryMgr:
+class ScherryMgrMeta(type):
+    _instance = None
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(ScherryMgrMeta, cls).__call__(*args, **kwargs)
+        return cls._instance
+
+class ScherryMgr(metaclass=ScherryMgrMeta):
     __bucketMaps : typing.Dict[str, Bucket]
     
     def __init__(self):
@@ -22,11 +31,23 @@ class ScherryMgr:
     def refresh_buckets(self):
         self.__bucketMaps = {}
         
-        for bucketName, bucketSrc in self.installed_buckets().items():
+        for bucketName, bucketMeta in self.installed_buckets().items():
+            bucketSrc = bucketMeta.get("source")
             self.__bucketMaps[bucketName] = Bucket(bucketName, bucketSrc)
         
-    def install_bucket(self, name : str, source : str):
-        cfg.setDeep("buckets", "installed", name, source)
+    def install_bucket(self, name : str, source : str = None):
+        installedIndexes = cfg.getDeep("buckets", "installed")
+        if name in installedIndexes:
+            raise RuntimeError(f"{name} bucket already installed")
+        
+        if source is None:
+            sourceMap : dict = cfg.getDeep("buckets", "index")
+            source = sourceMap.get(name, None)
+            
+        if source is None:
+            raise RuntimeError(f"{name} bucket not found")
+        
+        cfg.setDeep("buckets", "installed", name, "source", source)
         content = download_github_raw_content(url=source)
         os.makedirs(os.path.join(buckets_dir, name), exist_ok=True)
         bucket_path = os.path.join(buckets_dir, name)
@@ -38,6 +59,7 @@ class ScherryMgr:
     def uninstall_bucket(self, name : str):
         shutil.rmtree(os.path.join(buckets_dir, name))
         self.__bucketMaps.pop(name)
+        cfg["buckets"]["installed"].pop(name)
 
     def has_script(self, name : str):
         for bucket in self.__bucketMaps.values():
@@ -50,14 +72,36 @@ class ScherryMgr:
             if bucket.hasKey(name):
                 return bucket.get(name)
     
-    def run_scripts(self, *keys, data= {}):
+    def __handle_entry(self, config : dict):
+        pass
+    
+    def __handle_exit(self, ctx : dict, cctx : dict):
+        pass
+    
+    def run_scripts(self, *keys, temp : dict= {}, reinit_ctx : bool = False):
+        if os.path.exists("config.toml"):
+            config = toml.load("config.toml")
+        else:
+            config = {}
+            
+        config.update(temp)
+        
+        if not hasattr(self, "ctx") or reinit_ctx:
+            self.ctx = {}
+        self.ctx.update(config.get("global", {}))
+        
         for key in keys:
             content = self.get_script(key)
             string = content.decode()
+
+            entry_config = config.get(key, {})
+
+            cctx = dict(**self.ctx, **entry_config)
             
-            exec(string, data)
+            exec(string, cctx)
+
+            self.__handle_exit(self.ctx, cctx)
+        
+            logging.info(f"Run script {key} successfully")
             
-            print(f"Run script {key} successfully")
-            
-    
     
