@@ -49,15 +49,22 @@ def download_github_raw_content(url : str):
     return res.content
 
 _cache = {}
+_cache_path = {}
+
 def _retrieve_cache(giturl, filepath):
-    global _cache
+    global _cache, _cache_path
+    if giturl in _cache_path:
+        filepath = _cache_path[giturl]
+    
     if giturl not in _cache:
         with open(filepath, 'r') as f:
-            return f.read()
+            content = f.read()
+            _cache[giturl] = content
+            _cache_path[giturl] = filepath
     return _cache[giturl]
 
 def retrieve_file(giturl: str, filepath: str = None):
-    global _cache
+    global _cache, _cache_path
     
     # Parse the GitHub URL to extract id, branch, and filename
     id_branch_filename = raw_resolve(giturl)
@@ -100,6 +107,7 @@ def retrieve_file(giturl: str, filepath: str = None):
     cfg.setDeep(*last_commit_key, last_commit_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
     
     _cache[giturl] = content
+    _cache_path[giturl] = filepath
     return content
 
 def check_retrieved(giturl: str):
