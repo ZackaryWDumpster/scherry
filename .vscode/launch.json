@@ -10,6 +10,15 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger: Debugging",
+            "type": "debugpy",
+            "request": "launch",
+            "program" : "${workspaceFolder}/scherry/cli",
+            "args": [
+                "runs", "hello_world", "debug_logging", "win_sleep"
+            ]
         }
     ]
 }
