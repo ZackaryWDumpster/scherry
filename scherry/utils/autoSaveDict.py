@@ -1,4 +1,5 @@
 import os
+import shutil
 import orjson
 
 from scherry.utils.dictionary import setDeep as _setDeep
@@ -6,16 +7,22 @@ from scherry.utils.dictionary import getDeep as _getDeep
 from scherry.utils.dictionary import ERROR
 
 class AutoSaveDict(dict):
-    def __init__(self, filename, *args, **kwargs):
+    def __init__(self, filename, *args, bkup : bool = False, **kwargs):
         self.filename = filename
+        self.__bkup = bkup
         super().__init__(*args, **kwargs)
         if not os.path.exists(self.filename):
             with open(self.filename, 'w') as f:
                 f.write('{}')
-        
-        self._load()
+        try:
+            self._load()
+        except: # noqa
+            self._save()
             
     def _save(self):
+        if self.__bkup and os.path.exists(self.filename):
+            shutil.copyfile(self.filename, os.path.join(os.path.dirname(self.filename), f"{os.path.basename(self.filename)}.bkup"))
+        
         with open(self.filename, 'wb') as f:
             f.write(orjson.dumps(self, option=orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_INDENT_2))
             
