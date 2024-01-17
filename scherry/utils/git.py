@@ -72,7 +72,7 @@ def retrieve_file(giturl: str, filepath: str):
         raise ValueError("Could not retrieve the last commit date")
 
     # Check if the file on GitHub is newer
-    stored_last_commit_date = cfg.getDeep(last_commit_key)
+    stored_last_commit_date = cfg.getDeep(*last_commit_key)
     if stored_last_commit_date is not ERROR:
         stored_last_commit_date = datetime.datetime.strptime(stored_last_commit_date, "%Y-%m-%dT%H:%M:%SZ")
         if stored_last_commit_date >= last_commit_date:
@@ -85,5 +85,5 @@ def retrieve_file(giturl: str, filepath: str):
         file.write(content)
 
     # Update last pull and commit dates in the configuration
-    cfg.setDeep(last_pull_key, datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
-    cfg.setDeep(last_commit_key, last_commit_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    cfg.setDeep(*last_pull_key, datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+    cfg.setDeep(*last_commit_key, last_commit_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
