@@ -3,6 +3,12 @@
     "6f5756d34f488635f29ea9e4ff95184e4b9361eeee3cb11b91a76044f8be8a35": {
       "filename": "debug_logging.py"
     },
+    "c0c3c8274f1a5aad427e395386236ded814f66208e59e6ec081eec987a5bcf83": {
+      "filename": "download_file.py"
+    },
+    "df99e915d41c499778596a8c425b4730bb698ae57280e0c9db85ad31ff9d29e7": {
+      "filename": "expose.py"
+    },
     "a84bb1230b2edd73f469afd5aba69b3ca191e6c25b444cf93d23342b64d6af18": {
       "filename": "hello_world.py"
     },
