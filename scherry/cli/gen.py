@@ -1,4 +1,5 @@
 import os
+import shutil
 import click
 import orjson
 from scherry.utils.hashing import get_hash
@@ -51,7 +52,8 @@ def _parse_toml(path : str):
 @click.command()
 @click.argument("folder", type=click.Path(exists=True))
 @click.option("--name", "-n", help="name of the script")
-def gen(folder, name):
+@click.option("--copy", "-c", type=str, help="copy script to destination")
+def gen(folder, name, copy):
     name = os.path.basename(folder) if name is None else name
     
     gendict = {}
@@ -117,6 +119,10 @@ def gen(folder, name):
                 archiveName = os.path.relpath(filePath,folder)
 
                 zipObj.write(filePath, archiveName)
-        
+    
+    if copy is not None:
+        shutil.rmtree(os.path.join(copy, name), ignore_errors=True)
+        shutil.copytree(folder, os.path.join(copy, name), dirs_exist_ok=True)
+    
     click.echo("done")
 

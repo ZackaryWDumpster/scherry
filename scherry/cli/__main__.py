@@ -10,6 +10,12 @@ def cli():
 
 cli.add_command(gen)
 
+@cli.command("runs")
+@click.argument("cmds", nargs=-1)
+def run_cmd(cmds):
+    from scherry.utils.expose import runs
+    runs(*cmds)
+
 def cli_main():
     cli()
 
