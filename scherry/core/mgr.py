@@ -2,6 +2,7 @@ import logging
 import shutil
 import typing
 from scherry.core.bucket import Bucket, buckets_dir
+from scherry.utils import indexes
 from scherry.utils.cfg import cfg
 from scherry.utils.git import download_github_raw_content
 import os
@@ -41,7 +42,7 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             raise RuntimeError(f"{name} bucket already installed")
         
         if source is None:
-            sourceMap : dict = cfg.getDeep("buckets", "index")
+            sourceMap : dict = indexes["buckets"]
             source = sourceMap.get(name, None)
             
         if source is None:
@@ -92,6 +93,9 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         
         for key in keys:
             content = self.get_script(key)
+            if content is None:
+                raise RuntimeError(f"Cannot resolve script {key}")
+            
             string = content.decode()
 
             entry_config = config.get(key, {})
