@@ -9,7 +9,7 @@ except AttributeError:
  is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
 
 if not is_admin:
-    print("Please run as admin")
+    print("ERROR: This script must be run with administrative privileges.")
     sys.exit(1)
     
 def put_computer_to_sleep(seconds):
@@ -30,10 +30,6 @@ def get_user_defined_time():
             print("Invalid input. Please enter a number.")
 
 def main():
-    if not is_admin():
-        print("ERROR: This script must be run with administrative privileges.")
-        sys.exit(1)
-
     sleep_options = {
         1: 900,
         2: 1800,
@@ -67,3 +63,5 @@ def main():
             put_computer_to_sleep(seconds)
         else:
             print("Invalid input. Please enter a number.")
+
+main()
