@@ -2,9 +2,9 @@ import logging
 import shutil
 import typing
 from scherry.core.bucket import Bucket, buckets_dir
-from scherry.utils import indexes
+from scherry.utils.indexes import indexes, refresh_indexes
 from scherry.utils.cfg import cfg
-from scherry.utils.git import download_github_raw_content
+from scherry.utils.git import check_retrieved, retrieve_file
 import os
 import zipfile
 import io
@@ -36,6 +36,17 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             bucketSrc = bucketMeta.get("source")
             self.__bucketMaps[bucketName] = Bucket(bucketName, bucketSrc)
         
+    def __bucket_io_update(self,name, source):
+        content = retrieve_file(source)
+        if os.path.exists(os.path.join(buckets_dir, name)):
+            shutil.rmtree(os.path.join(buckets_dir, name))
+        
+        os.makedirs(os.path.join(buckets_dir, name), exist_ok=True)
+        bucket_path = os.path.join(buckets_dir, name)
+        with zipfile.ZipFile(io.BytesIO(content), 'r') as zip_ref:
+            zip_ref.extractall(bucket_path)
+        self.__bucketMaps[name] = Bucket(name, bucket_path)
+        
     def install_bucket(self, name : str, source : str = None):
         installedIndexes = cfg.getDeep("buckets", "installed")
         if name in installedIndexes:
@@ -49,13 +60,20 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             raise RuntimeError(f"{name} bucket not found")
         
         cfg.setDeep("buckets", "installed", name, "source", source)
-        content = download_github_raw_content(url=source)
-        os.makedirs(os.path.join(buckets_dir, name), exist_ok=True)
-        bucket_path = os.path.join(buckets_dir, name)
-        with zipfile.ZipFile(io.BytesIO(content), 'r') as zip_ref:
-            zip_ref.extractall(bucket_path)
         
-        self.__bucketMaps[name] = Bucket(name, bucket_path)
+        self.__bucket_io_update(name, source)
+        
+        refresh_indexes()
+    
+    def update_bucket(self, name : str):
+        sourceMap : dict = indexes["buckets"]
+        source = sourceMap.get(name, None)
+        
+        if check_retrieved(source):
+            logging.info(f"{name} bucket already updated")
+            return
+        
+        self.__bucket_io_update(name, source)
     
     def uninstall_bucket(self, name : str):
         shutil.rmtree(os.path.join(buckets_dir, name))
