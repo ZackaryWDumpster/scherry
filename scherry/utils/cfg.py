@@ -11,8 +11,3 @@ appdata_dir= os.path.join(mod_dir, "appdata")
 os.makedirs(appdata_dir, exist_ok=True)
 
 cfg = AutoSaveDict(os.path.join(appdata_dir, "cfg.json"))
-
-# known indexes
-cfg.setDefaultDeep("buckets", "index", {
-    "test" : "ZackaryW/scherry/main/scherry_bucket_test.zip"
-})
