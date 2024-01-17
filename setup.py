@@ -22,5 +22,7 @@ setup(
             "schry=scherry.cli.__main__:cli",
             "scherry-bkup=scherry.cli.bkup:cli",
         ]
-    }
+    },
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
 )
