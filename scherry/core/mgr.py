@@ -23,6 +23,10 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
     def __init__(self):
         self.refresh_buckets()
     
+    @property
+    def buckets(self):
+        return list(self.__bucketMaps.values())
+    
     def installed_buckets(self):
         cfg.setDefaultDeep("buckets", "installed", {})
         res =  cfg.getDeep("buckets", "installed")
@@ -79,6 +83,7 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         shutil.rmtree(os.path.join(buckets_dir, name))
         self.__bucketMaps.pop(name)
         cfg["buckets"]["installed"].pop(name)
+        refresh_indexes()
 
     def has_script(self, name : str):
         for bucket in self.__bucketMaps.values():
