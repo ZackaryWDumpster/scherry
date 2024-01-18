@@ -2,6 +2,7 @@ import logging
 import shutil
 import typing
 from scherry.core.bucket import Bucket, buckets_dir
+from scherry.utils.dictionary import ERROR
 from scherry.utils.indexes import indexes, refresh_indexes
 from scherry.utils.cfg import cfg
 from scherry.utils.git import check_retrieved, retrieve_file
@@ -97,11 +98,38 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
                 logging.info(f"Get script {name} from bucket {bucket.name}")
                 return bucket.get(name)
     
-    def __handle_entry(self, config : dict):
-        pass
+    def __handle_entry(self, config : dict, seq : int):
+        cwdIn = config.pop("cwdIn", None)
+        if cwdIn is not None:
+            os.chdir(cwdIn)
+        
+        cwdPush = config.pop("cwdPush", None)
+
+        if cwdPush is not None:
+            currCwd = os.getcwd()
+            os.chdir(cwdPush)
+            config["cwdPop"] = currCwd
+            
+        config["ScherrySeq"] = seq
     
     def __handle_exit(self, ctx : dict, cctx : dict):
-        pass
+        cwdOut = cctx.pop("cwdPop", None)
+        if cwdOut is not None:
+            os.chdir(cwdOut)
+            
+        cwdPop = cctx.pop("cwdPop", None)
+        if cwdPop is not None:
+            os.chdir(cwdPop)
+            
+        dataOut = cctx.pop("dataOut", ERROR)
+        if dataOut is ERROR:
+            ctx.update({k : v for k, v in cctx.items() if not k.startswith("Scherry")})
+        elif dataOut is False:
+            pass
+        elif isinstance(dataOut, dict):
+            ctx.update(dataOut)
+        else:
+            ctx["dataOut"] = dataOut
     
     def run_scripts(self, *keys, temp : dict= {}, reinit_ctx : bool = False):
         if os.path.exists("config.toml"):
@@ -115,7 +143,7 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             self.ctx = {}
         self.ctx.update(config.get("global", {}))
         
-        for key in keys:
+        for i, key in enumerate(keys):
             content = self.get_script(key)
             if content is None:
                 raise RuntimeError(f"Cannot resolve script {key}")
@@ -125,6 +153,8 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             entry_config = config.get(key, {})
 
             cctx = dict(**self.ctx, **entry_config)
+            
+            self.__handle_entry(cctx, i)
             
             exec(string, cctx)
 
