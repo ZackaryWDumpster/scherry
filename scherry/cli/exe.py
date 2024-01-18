@@ -31,7 +31,34 @@ def run_cmd(cmds, cfg : str):
         cfg = {}
         
     from scherry.utils.expose import mgr
-    mgr.run_scripts(*cmds, temp=cfg)
+    
+    # parse in between args
+    actualCmds = []
+    
+    lastCmd = None
+    for arg in cmds:
+        arg : str
+        if not (arg.startswith("[") and arg.endswith("]")):
+            actualCmds.append(arg)
+            lastCmd = arg
+            continue
+        
+        arg = arg[1:-1]
+        arg_splitted = arg.split(",")
+        arg_collected = [x.split("=") for x in arg_splitted]
+        
+        if lastCmd is None:
+            if "global" not in cfg:
+                cfg["global"] = {}
+            for k, v in arg_collected:
+                cfg["global"][k] = v
+        else:
+            if lastCmd not in cfg:
+                cfg[lastCmd] = {}
+            for k, v in arg_collected:
+                cfg[lastCmd][k] = v
+    
+    mgr.run_scripts(*actualCmds, temp=cfg)
     
 @click.group("bucket", invoke_without_command=True)
 @click.pass_context
