@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="scherry",
-    version="0.0.1",
+    version="0.0.2",
     packages=[
         "scherry",
         "scherry.utils",
