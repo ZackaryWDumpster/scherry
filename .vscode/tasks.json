@@ -12,6 +12,12 @@
             "label": "gen main bucket",
             "type": "shell",
             "command": "py scherry/cli gen scherry_bucket_main -n main -c scherry/appdata/buckets"
+        },
+        {
+            "label": "import appdata",
+            "type": "shell",
+            "command" : "scherry-bkup import -p scherry -c",
+            // cwd
         }
     ]
 }
