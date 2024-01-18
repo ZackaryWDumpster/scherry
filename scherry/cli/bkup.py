@@ -71,6 +71,11 @@ def import_(clean : bool, path : str):
         pass
     
     print("set appdata to be imported as ", appdata_folder_path)
+    
+    if not os.path.exists(os.path.join(appdata_folder_path, "buckets")):
+        print("buckets folder not found")
+        return
+    
     shutil.copytree(appdata_folder_path, appdata_dir, dirs_exist_ok=True)
     
     print("imported")    
