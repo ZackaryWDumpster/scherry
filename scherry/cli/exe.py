@@ -1,5 +1,6 @@
 
 import json
+import os
 import click
 from scherry.core.mgr import ScherryMgr
 
@@ -70,3 +71,8 @@ def list_scripts(mgr : ScherryMgr):
         for script in bucket.fileNameNoExtensionIndex.keys():
             print(script)
             
+            
+@click.command("appdata")
+def open_appdata():
+    from scherry.utils.cfg import appdata_dir
+    os.startfile(appdata_dir)
