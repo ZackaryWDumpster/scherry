@@ -153,3 +153,4 @@ cython_debug/
 appdata
 test.py
 testing
+.vscode/launch.json
