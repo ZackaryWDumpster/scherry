@@ -1,6 +1,6 @@
 import os
 import zipfile
-
+import io
 def make_zip(folder : str, exclusions : list = []):
     _zipfile = folder+".zip"
     if os.path.exists(_zipfile):
@@ -25,3 +25,9 @@ def make_zip(folder : str, exclusions : list = []):
                 archiveName = os.path.relpath(filePath,folder)
 
                 zipObj.write(filePath, archiveName)
+                
+def extract_zip(zipobj : zipfile.ZipFile, folder : str):
+    if isinstance(zipobj, bytes):
+        zipobj = zipfile.ZipFile(io.BytesIO(zipobj))
+    
+    zipobj.extractall(folder)

@@ -1,15 +1,19 @@
 
+import datetime
 from functools import cache
+import logging
 import os
 import shutil
 import typing
 from venv import logger
 
 from scherry.core.bucket import Bucket
-from scherry.core import buckets_dir, cfg, bucket_cache_dir
+from scherry.core import buckets_dir, bucket_cache_dir, tracked_index, cache_dir
 from scherry.core.ctx import ScherryCtx, KeyPassObj
-from scherry.utils.git import download_github_raw_content
+from scherry.core.model import TrackedIndexEntry
+from scherry.utils.git import download_github_raw_content, git_last_commit_date
 from scherry.utils.hashing import check_hash, get_hash
+from scherry.utils.zip import extract_zip
 
 class ScherryMgrMeta(type):
     _instance = None
@@ -20,12 +24,18 @@ class ScherryMgrMeta(type):
     
 class ScherryMgr(metaclass=ScherryMgrMeta):
     __bucketMaps : typing.Dict[str, Bucket]
-    
+
     def __init__(self):
         self.__bucketMaps = Bucket.retrieve()
         self.__pushedScope : str = None
         self.__includedScopes : typing.List[str] = []
         self.__excludedScopes : typing.List[str] = []
+        self.__localFileCache : typing.Dict[str, bytes] = {}
+        
+        
+        if len(self.__bucketMaps) == 0:
+            logging.info("no bucket found, defaulting to install main")
+            self.bucket_install("main", "zackaryw/scherry")
         
     def bucket_list_collected(self):
         _map = {}
@@ -47,9 +57,27 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         
         return True
     
-    def bucket_install(self, name : str, url : str = None):
-        if name in cfg.get("bucketsCheck"):
-            return False
+    def bucket_install(self, name : str, gitUrl : str = None, forced : bool = False):
+        if name in self.bucket_list_installed():
+            return 0
+        
+        if gitUrl is None:
+            bucketCtxes =  self.bucket_list_collected()
+            if name not in bucketCtxes:
+                return -1
+            gitUrl = bucketCtxes[name]
+            
+        res = self.file(
+            gitUrl,
+            dirPath="buckets",
+            fileName=name+".zip",
+            pullOnceEvery=None if forced else 24*60*60,
+            commitCheck=False if forced else True,
+            overwrite=True
+        )
+        os.makedirs(os.path.join(buckets_dir, name), exist_ok=True)
+        extract_zip(res, os.path.join(buckets_dir, name))
+        self.__bucketMaps = Bucket.retrieve()
         
     def push_bucket_scope(self, name : str):
         if name not in self.__bucketMaps:
@@ -103,6 +131,22 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         key = splitted[1]
         bucket = self.__bucketMaps[bucketname]
         return bucket, key
+    
+    def list_scripts(self):
+        ret = []
+        for name, bucket in self.__bucketMaps.items():
+            if self.__pushedScope is not None and self.__pushedScope != name:
+                continue
+            
+            if self.__includedScopes and name not in self.__includedScopes:
+                continue
+            
+            if self.__excludedScopes and name in self.__excludedScopes:
+                continue
+            
+            ret.extend(bucket.scripts.keys())
+    
+        return ret
     
     @cache
     def get_script(self, key : str):
@@ -184,3 +228,112 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             
         return ctx
     
+    def __fileNeedsRepull(self, pullOnceEvery : int, downloadUrl : str):
+        if pullOnceEvery is None:
+            return True
+        
+        lastDate = tracked_index[downloadUrl].get("lastPulled", None)
+        if lastDate is None:
+            return True
+        
+        lastDate = datetime.datetime.fromisoformat(lastDate)
+        
+        return lastDate + datetime.timedelta(seconds = pullOnceEvery) < datetime.datetime.now()
+    
+    def __fileCommitCheck(
+        self, downloadUrl : str, gitUrl : str, fileName : str
+    ):
+        lastCommitChecked = tracked_index[downloadUrl].get("lastCommitChecked", None)
+        if lastCommitChecked is None:
+            return False, None
+        
+        lastCommitChecked = datetime.datetime.fromisoformat(lastCommitChecked)
+        commitCheck = git_last_commit_date(gitUrl, fileName)
+        
+        return lastCommitChecked == commitCheck, commitCheck
+    
+    def _retrieveLocalCache(self, downloadUrl : str):
+        res = self.__localFileCache.get(downloadUrl, None)
+        if res is not None:
+            return res
+        
+        trackingEntry : TrackedIndexEntry = tracked_index[downloadUrl]
+        if "hashing" not in trackingEntry:
+            return None
+        
+        hashing = trackingEntry["hashing"]
+        expected_path = os.path.join(cache_dir, hashing)
+        if not os.path.exists(expected_path):
+            return None
+        
+        content = open(expected_path, 'rb').read()
+        if not check_hash(content, hashing):
+            logging.error("local hash mismatch for %s", downloadUrl)
+            return None
+        
+        self.__localFileCache[downloadUrl] = content
+        return content
+        
+    
+    def file(
+        self, 
+        gitUrl : str,
+        branch : str = "main",
+        dirPath : str = None,
+        fileName : str = "",
+        pullOnceEvery : int = None,
+        commitCheck : bool = False,
+        targetPath : str = None,
+        overwrite : bool = False
+    ):
+        if not fileName:
+            raise RuntimeError("fileName cannot be empty")
+        
+        if not overwrite and os.path.exists(os.path.join(targetPath, fileName)):
+            return
+        
+        downloadUrl = f"{gitUrl}/{branch}/{dirPath[:-1] if "/" in dirPath else dirPath}/{fileName}"
+        retrieveLocal = True
+        
+        if downloadUrl not in tracked_index:
+            dict.__setitem__(tracked_index, downloadUrl, {})
+            
+        if self.__fileNeedsRepull(pullOnceEvery, downloadUrl):
+            self.__localFileCache.pop(downloadUrl, None)
+            retrieveLocal = False
+            
+        commitTuple= None
+        if commitCheck and not retrieveLocal:
+            commitTuple =self.__fileCommitCheck(downloadUrl, gitUrl, fileName)
+            if not commitTuple[0]:
+                self.__localFileCache.pop(downloadUrl, None)
+                retrieveLocal = False
+    
+        if retrieveLocal:
+            res = self._retrieveLocalCache(downloadUrl)
+            if res is not None and targetPath is not None:
+                with open(os.path.join(targetPath, fileName), 'wb') as f:
+                    f.write(res)
+                return res
+            elif res is not None:
+                return res
+            
+        # retrieve from remote
+        content = download_github_raw_content(downloadUrl)
+        downloadedHash = get_hash(content)
+        cachePath = os.path.join(cache_dir, downloadedHash)
+        
+        with open(cachePath, 'wb') as f:
+            f.write(content)
+            
+        self.__localFileCache[downloadUrl] = content
+        tracked_index.setDeep(downloadUrl, "hashing", downloadedHash)
+        tracked_index.setDeep(downloadUrl, "lastPulled", datetime.datetime.now())
+        if commitTuple is not None:
+            tracked_index.setDeep(downloadUrl, "lastCommitChecked", commitTuple[1])
+        
+        if targetPath is not None:
+            shutil.copy(cachePath, targetPath)
+            os.rename(os.path.join(targetPath, downloadedHash), os.path.join(targetPath, fileName))
+        
+        return content

@@ -57,7 +57,7 @@ class Bucket(metaclass=BucketMeta):
             if not k.startswith("_"):
                 continue
             
-            if k.startswith("__"):
+            if k.startswith(f"_{self.__class__.__name__}__"):
                 continue
             
             if k not in self.__dict__:

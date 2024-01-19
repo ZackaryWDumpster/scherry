@@ -3,6 +3,11 @@
 from typing import TypedDict
 import typing
 
+class TrackedIndexEntry(TypedDict, total=False):
+    hashing : str
+    lastPulled : float
+    lastCommitChecked : float
+    
 class ScriptModel(TypedDict):
     hashing : str
 

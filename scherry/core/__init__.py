@@ -28,4 +28,3 @@ os.makedirs(bucket_cache_dir, exist_ok=True)
 
 # [appdata/cfg.json]
 cfg = AutoSaveDict(os.path.join(appdata_dir, "cfg.json"))
-cfg.setdefault("bucketsCheck", {})
