@@ -1,7 +1,5 @@
 
 import io
-import zipfile
-import os
 
 def crlf_to_lf_1(text : str):
     return text.replace("\r\n", "\n")
