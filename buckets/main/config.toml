@@ -1,3 +1,6 @@
 name="main"
 bucketDir = "buckets"
 gitUrl = "zackaryw/scherry"
+
+[buckets]
+test = "zackaryw/scherry"
