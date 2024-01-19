@@ -14,11 +14,19 @@ os.makedirs(appdata_dir, exist_ok=True)
 buckets_dir = os.path.join(appdata_dir, "buckets")
 os.makedirs(buckets_dir, exist_ok=True)
 
-# [appdata/file_cache]
-file_cache_dir = os.path.join(appdata_dir, "file_cache")
-os.makedirs(file_cache_dir, exist_ok=True)
+# [appdata/indexed_cache]
+tracked_cache_dir = os.path.join(appdata_dir, "tracked_cache")
+os.makedirs(tracked_cache_dir, exist_ok=True)
 
 # [appdata/file_cache.json]
-file_cache_index_path = os.path.join(appdata_dir, "file_cache.json")
-file_cache_index = AutoSaveDict(file_cache_index_path)
+tracked_cache_index_path = os.path.join(appdata_dir, "tracked_cache.json")
+tracked_cache_index = AutoSaveDict(tracked_cache_index_path)
 
+# [appdata/cache]
+cache_dir = os.path.join(appdata_dir, "cache")
+os.makedirs(cache_dir, exist_ok=True)
+
+
+# [appdata/cfg.json]
+cfg = AutoSaveDict(os.path.join(appdata_dir, "cfg.json"))
+cfg.setdefault("bucketsCheck", {})
