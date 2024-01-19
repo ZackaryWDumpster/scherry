@@ -1,0 +1,34 @@
+{
+  "name": "test",
+  "bucketDir": "buckets",
+  "gitUrl": "zackaryw/scherry",
+  "buckets": {},
+  "scripts": {
+    "cd_output.py": {
+      "hashing": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ctx_in.py": {
+      "hashing": "38f91324219dc4bd909a7ef9325a248fd84b03d37fda640d46d9f67a44f8ec64"
+    },
+    "ctx_out.py": {
+      "hashing": "6e56c9eee7c325bff25e588542b14bf009e4d6f5429d31d1c2ff373349e89950"
+    },
+    "debug_logging.py": {
+      "hashing": "6036b91818eb8797e1645870d0d2bd3211f7867f5b5996de20735cfe5b426054"
+    },
+    "expose_mgr.py": {
+      "hashing": "f1420f2f9a636a2bee00f0da59fea8fb330aa65c964a4986d9d239017ecf30a8"
+    },
+    "hello_world.py": {
+      "hashing": "a84bb1230b2edd73f469afd5aba69b3ca191e6c25b444cf93d23342b64d6af18"
+    },
+    "taking_input.py": {
+      "hashing": "614a46d474cb2884f7ce704f15f161800dd69670a5717cb3ab4c48c67f8de15e"
+    }
+  },
+  "files": {
+    "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e": {
+      "file": "hello_world.txt"
+    }
+  }
+}
