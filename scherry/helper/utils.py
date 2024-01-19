@@ -1,14 +1,15 @@
 
 import io
 
-def crlf_to_lf_1(text : str):
-    return text.replace("\r\n", "\n")
+def crlf_to_lf_1(text : bytes):
+    # bytes \r\n to bytes \n
+    return text.replace(b"\r\n", b"\n")
 
 def crlf_to_lf_2(file : str):
-    with open(file, 'r') as f:
+    with open(file, 'rb') as f:
         content = f.read()
         
-    with open(file, 'w') as f:
+    with open(file, 'wb') as f:
         f.write(crlf_to_lf_1(content))
         
 def crlf_to_lf_3(file : io.TextIOWrapper):

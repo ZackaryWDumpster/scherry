@@ -10,6 +10,7 @@ def parse_scripts(path : str):
     
     for file in os.listdir(path):
         crlf_to_lf_2(os.path.join(path, file))
+        click.echo(f"parsing {file}")
         hashing = get_hash(open(os.path.join(path, file), 'rb').read())
         ret[file] = {
             "hashing" : hashing
@@ -26,12 +27,19 @@ def parse_files(path : str, collectionPath : str = os.getcwd()):
         os.makedirs(scherry_files, exist_ok=True)
         
     for file in os.listdir(path):
+        click.echo(f"indexing {file}")
         crlf_to_lf_2(os.path.join(path, file))
-        hashing = get_hash(open(os.path.join(path, file), 'rb').read())
+    
+        with open(os.path.join(path, file), 'rb') as f:
+            hashing = get_hash(f.read())
+        
+        
         ret[hashing] = {
             "file" : file,
         }
-        shutil.copy(os.path.join(path, file), os.path.join(scherry_files, hashing))
+        shutil.copy(
+            os.path.join(path, file), os.path.join(scherry_files, hashing),
+        )
         
     return ret
 
