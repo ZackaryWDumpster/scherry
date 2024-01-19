@@ -6,18 +6,12 @@
         {
             "label": "gen test bucket",
             "type": "shell",
-            "command": "py scherry/cli gen scherry_bucket_test -n test -c scherry/appdata/buckets"
+            "command": "py scherry/helper gen test -c scherry/appdata/buckets -z"
         },
         {
             "label": "gen main bucket",
             "type": "shell",
-            "command": "py scherry/cli gen scherry_bucket_main -n main -c scherry/appdata/buckets"
-        },
-        {
-            "label": "import appdata",
-            "type": "shell",
-            "command" : "scherry-bkup import -p scherry -c",
-            // cwd
+            "command": "py scherry/helper gen main -c scherry/appdata/buckets -z"
         }
     ]
 }

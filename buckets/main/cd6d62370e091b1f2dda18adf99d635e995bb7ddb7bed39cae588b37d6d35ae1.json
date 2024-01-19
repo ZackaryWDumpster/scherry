@@ -1,0 +1,15 @@
+{
+  "name": "main",
+  "bucketDir": "buckets",
+  "gitUrl": "zackaryw/scherry",
+  "buckets": {},
+  "scripts": {
+    "pypi_upload.py": {
+      "hashing": "d97522daca0ebd223907020734ab50cefab50f39267bdc9d6182a2d74f555107"
+    },
+    "win_sleep.py": {
+      "hashing": "e14b925681e3021fbbc08c3600ca1f5ced3bad57de599aeb625d2f310a15e2ef"
+    }
+  },
+  "files": {}
+}
