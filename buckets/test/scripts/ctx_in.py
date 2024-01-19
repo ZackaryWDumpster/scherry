@@ -1,5 +1,5 @@
 
-seq = globals().get("ScherrySeq")
+seq = globals().get("ctx").currentSeq
 
 print("current sequence is " + str(seq))
 
