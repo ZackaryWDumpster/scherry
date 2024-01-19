@@ -8,7 +8,7 @@ from venv import logger
 from scherry.core.bucket import Bucket
 from scherry.core import buckets_dir, cfg, bucket_cache_dir
 from scherry.core.ctx import ScherryCtx, KeyPassObj
-from scherry.utils.file import download_github_raw_content
+from scherry.utils.git import download_github_raw_content
 from scherry.utils.hashing import check_hash, get_hash
 
 class ScherryMgrMeta(type):
