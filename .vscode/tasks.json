@@ -6,12 +6,12 @@
         {
             "label": "gen test bucket",
             "type": "shell",
-            "command": "py scherry/helper gen test -c scherry/appdata/buckets -z"
+            "command": "py scherry/helper bucket gen test -c scherry/appdata/buckets -z"
         },
         {
             "label": "gen main bucket",
             "type": "shell",
-            "command": "py scherry/helper gen main -c scherry/appdata/buckets -z"
+            "command": "py scherry/helper bucket gen main -c scherry/appdata/buckets -z"
         }
     ]
 }
