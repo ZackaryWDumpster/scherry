@@ -124,6 +124,18 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         self.__includedScopes = []
         self.__excludedScopes = []
     
+    def current_bucket_scopes(self):
+        if self.__pushedScope is not None:
+            return (self.__pushedScope,)
+    
+        if len(self.__includedScopes) > 0:
+            return tuple(self.__includedScopes)
+        
+        if len(self.__excludedScopes) > 0:
+            return tuple(self.__excludedScopes)
+        
+        return tuple(self.__bucketMaps.keys())
+        
     
     def resolve_specified_bucket(self, key : str):
         splitted = key.split("/")
@@ -146,6 +158,22 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             
             ret.extend(bucket.scripts.keys())
     
+        return ret
+    
+    def list_script_names(self):
+        ret = []
+        for name, bucket in self.__bucketMaps.items():
+            if self.__pushedScope is not None and self.__pushedScope != name:
+                continue
+            
+            if self.__includedScopes and name not in self.__includedScopes:
+                continue
+            
+            if self.__excludedScopes and name in self.__excludedScopes:
+                continue
+            
+            ret.extend(bucket._scriptNames)
+            
         return ret
     
     @cache

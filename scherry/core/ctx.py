@@ -1,3 +1,4 @@
+from functools import cached_property
 import os
 from types import MappingProxyType
 from typing import Any
@@ -13,6 +14,7 @@ class ScherryCtx:
     
     __globalData : dict
     __scopedData : typing.Dict[str, dict]
+    __scopedDataX : typing.Dict[tuple, typing.List[dict]]
     
     cwdIn : str = None
     cwdPush : str = None
@@ -32,10 +34,12 @@ class ScherryCtx:
         object.__setattr__(self, "currentSeq", 0)
         self.__globalData = dict()
         self.__scopedData = dict()
+        self.__scopedDataX = dict()
         self.__runtimeConfigData()
         self.__globalData["ctx"] = self
         self.__runSequenece = []
         self.__lastSnapShot = None
+        self.__dict__.pop("__scoped", None)
         
     def preSetup(self, key : str):
         object.__setattr__(self, "currentKey", key)
@@ -48,11 +52,10 @@ class ScherryCtx:
             os.chdir(self.cwdPush)
             self.cwdPush = None
             
-        self.__keyedShadowMap = self.__scopedData.get(key, None)
-        if self.__keyedShadowMap is None:
-            return
-        
-        self.__globalData.update(self.__keyedShadowMap)
+        self.__keyedShadowMap = self.__preSetupScopedData.get(key, None)
+        if self.__keyedShadowMap is not None:
+            self.__globalData.update(self.__keyedShadowMap)
+
         
     def postSetup(self):
         object.__setattr__(self, "currentSeq", self.currentSeq + 1)
@@ -97,3 +100,30 @@ class ScherryCtx:
         if obj is KeyPassObj:
             return self.__globalData
         return MappingProxyType(self.__globalData)
+    
+    @cached_property
+    def __preSetupScopedData(self):
+        data = self.__scopedData.copy()
+        for t, dicts in self.__scopedDataX.items():
+            t : typing.Tuple[str]
+            for tk in t:
+                for dict_ in dicts:
+                    if tk in data:
+                        data[tk].update(dict_)
+                    else:
+                        data[tk] = dict_
+        return data
+    
+    def setPersistent(self, *args, data : dict = None, **kwargs):
+        if data is None:
+            data = {}
+            
+        data.update(kwargs)
+        
+        if args not in self.__scopedDataX:
+            self.__scopedDataX[args] = []
+            
+        if data in self.__scopedDataX[args]:
+            return
+            
+        self.__scopedDataX[args].append(data)

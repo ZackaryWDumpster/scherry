@@ -1,8 +1,13 @@
 import os
 import zipfile
 import io
-def make_zip(folder : str, exclusions : list = []):
-    _zipfile = folder+".zip"
+def make_zip(folder : str, exclusions : list = [], targetPath : str = None):
+    if targetPath is None:
+        _zipfile = folder+".zip"
+    else:
+        foldername = os.path.basename(folder)
+        _zipfile = os.path.join(targetPath, foldername+".zip")
+    
     if os.path.exists(_zipfile):
         os.remove(_zipfile)                            
     
