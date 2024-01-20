@@ -1,5 +1,4 @@
 import os
-import shutil
 import click
 import toml
 from scherry.helper.utils import crlf_to_lf_1, crlf_to_lf_2

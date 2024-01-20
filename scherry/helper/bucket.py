@@ -1,7 +1,7 @@
 import os
 import click
 from scherry.utils.file import get_files, touch_file
-from scherry.helper.bucket.gen_parse import parse_scripts, parse_files, parse_config
+from scherry.utils.gen_parse import parse_scripts, parse_files, parse_config
 from scherry.utils.hashing import get_hash
 from scherry.utils.zip import make_zip
 import json
