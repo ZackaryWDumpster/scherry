@@ -45,6 +45,12 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             
         return _map
     
+    def get_bucket(self, name :str) -> Bucket | None:
+        if name not in self.__bucketMaps:
+            return None
+        
+        return self.__bucketMaps[name]
+    
     def bucket_list_installed(self):
         return list(self.__bucketMaps.keys())
         
@@ -77,6 +83,13 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         )
         os.makedirs(os.path.join(buckets_dir, name), exist_ok=True)
         extract_zip(res, os.path.join(buckets_dir, name))
+        self.__bucketMaps = Bucket.retrieve()
+        
+    def bucket_uninstall(self, name : str):
+        if name not in self.bucket_list_installed():
+            return 0
+        
+        shutil.rmtree(os.path.join(buckets_dir, name))
         self.__bucketMaps = Bucket.retrieve()
         
     def push_bucket_scope(self, name : str):

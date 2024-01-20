@@ -27,6 +27,10 @@ class Bucket(metaclass=BucketMeta):
         if not check_hash(self._indexBytes, os.path.basename(self._indexPath).split(".")[0]):
             raise RuntimeError("Hashes do not match")
     
+    @property
+    def name(self):
+        return self.__name
+    
     @cached_property
     def _path(self):
         return os.path.join(buckets_dir, self.__name)

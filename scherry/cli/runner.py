@@ -34,9 +34,7 @@ def parse_cmds(*args):
                 # parse as dict
                 kdict = json.loads(arg)
                 ctx.setPersistent(*mgr.current_bucket_scopes(), data=kdict)
-            case str() if arg.isalpha():
-                sequence.append(arg)
-            case str() if "/" in arg and arg.replace("/","").isalpha():
+            case _:
                 sequence.append(arg)
                 
     return ctx, sequence
@@ -44,7 +42,7 @@ def parse_cmds(*args):
         
 @click.command("run")
 @click.argument("args", nargs=-1)
-def run(*args):
+def run(args):
     ctx, sequence = parse_cmds(*args)
     mgr.run_multiple(*sequence, ctx=ctx)
     
