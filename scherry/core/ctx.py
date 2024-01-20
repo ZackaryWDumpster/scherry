@@ -26,8 +26,13 @@ class ScherryCtx:
     def runSequence(self):
         return tuple(self.__runSequenece)
     
-    def __init__(self) -> None:
+    def __init__(self, mgr) -> None:
         self.reset()
+        self.__mgr = mgr
+        
+    @property
+    def mgr(self):
+        return self.__mgr
         
     def reset(self):
         object.__setattr__(self, "currentKey", None)
@@ -115,6 +120,10 @@ class ScherryCtx:
         return data
     
     def setPersistent(self, *args, data : dict = None, **kwargs):
+        if args == self.mgr.all_bucket_scopes():
+            self.__globalData.update(data)
+            return
+        
         if data is None:
             data = {}
             

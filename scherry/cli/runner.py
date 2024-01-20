@@ -15,7 +15,7 @@ def parse_keyval(arg : str):
     return {x.split("=")[0] : x.split("=")[1] for x in splitted}
 
 def parse_cmds(*args):
-    ctx = ScherryCtx()
+    ctx = ScherryCtx(mgr)
     sequence = []
     
     for arg in args:

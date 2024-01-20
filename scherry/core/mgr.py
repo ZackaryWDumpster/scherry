@@ -148,7 +148,9 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
             return tuple(self.__excludedScopes)
         
         return tuple(self.__bucketMaps.keys())
-        
+    
+    def all_bucket_scopes(self):
+        return tuple(self.__bucketMaps.keys())
     
     def resolve_specified_bucket(self, key : str):
         splitted = key.split("/")
@@ -254,7 +256,7 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         ctx :ScherryCtx = None,
     ):
         if ctx is None:
-            ctx = ScherryCtx()
+            ctx = ScherryCtx(self)
         
         for arg in args:
             script = self.get_script(arg)
