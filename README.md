@@ -15,15 +15,6 @@ pip install scherry
 - Simple Bucket Management: uses github for managing buckets.
 - Command-Line Interface (CLI): Feature-rich CLI for generating buckets, running scripts and import/export
 
-## CLI
-### scherry
-run multiple scripts by script keywords
-```
-scherry runs [*args]
-```
-### scherry-bkup
-(wip)
-
 ## Disclaimer
 This project is initially designed with a heavy focus for personal use. (also WIP)
 
