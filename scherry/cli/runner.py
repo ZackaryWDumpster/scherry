@@ -42,7 +42,8 @@ def parse_cmds(*args):
         
 @click.command("run")
 @click.argument("args", nargs=-1)
-def run(args):
+@click.option("--unsafe", "-u", is_flag=True)
+def run(args, unsafe):
     ctx, sequence = parse_cmds(*args)
-    mgr.run_multiple(*sequence, ctx=ctx)
+    mgr.run_multiple(*sequence, ctx=ctx, allowUnsafe=unsafe)
     

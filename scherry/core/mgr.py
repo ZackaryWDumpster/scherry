@@ -254,13 +254,20 @@ class ScherryMgr(metaclass=ScherryMgrMeta):
         self,
         *args,
         ctx :ScherryCtx = None,
+        allowUnsafe : bool = False
     ):
         if ctx is None:
             ctx = ScherryCtx(self)
         
         for arg in args:
+            if arg.startswith("local:"):
+                arg = arg[6:]
+            
             script = self.get_script(arg)
-            if script is None:
+            if script is None and allowUnsafe and os.path.exists(arg):
+                script = open(arg, 'rb').read()
+            
+            if script is None:    
                 raise RuntimeError(f"{arg} script not found")
             
             ctx.preSetup(arg)
